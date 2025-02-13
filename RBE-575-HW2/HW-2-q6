@@ -1,0 +1,90 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from cbf_toolbox.geometry import Sphere, Ellipsoid, HalfPlane, Point, Shape
+from cbf_toolbox.dynamics import Dynamics, SingleIntegrator2d, SingleIntegrator
+from cbf_toolbox.vertex import Agent, Obstacle, Goal
+from cbf_toolbox.safety import Simulation
+
+
+class Point1D(Shape):
+    """A single point in space. If given an offset, it similar to a sphere"""
+    def __init__(self, ndim=2, marker='x'):
+        self.ndim = ndim
+        self.radius = 0
+        self.marker = marker
+    
+    def func(self, x, offset=0):
+        """Function that defines the shape"""
+        return x.T.dot(x) - offset**2
+
+    def plot(self,ax,x,color='red'):
+        """Plot the shape"""
+        #print(x)
+        ax.plot(x[0], 0, self.marker,color=color,mew=3)
+        # if len(x) == 2:
+        #     ax.plot(x[0], x[1],self.marker,color=color,mew=3)
+        # elif len(x) == 3:
+        #     ax.plot3D([x[0]],[x[1]],[x[2]],color=color, marker=self.marker)
+
+class Point1D2(Shape):
+    """A single point in space. If given an offset, it similar to a sphere"""
+    def __init__(self, ndim=2, marker='x'):
+        self.ndim = ndim
+        self.radius = 0
+        self.marker = marker
+    
+    def func(self, x, offset=0):
+        """Function that defines the shape"""
+        return x.T.dot(x) - offset**2
+
+    def plot(self,ax,x,color='red'):
+        """Plot the shape"""
+        ax.plot(x[0], 0, self.marker,color=color,mew=3)
+        # if len(x) == 2:
+        #     ax.plot(x[0], x[1],self.marker,color=color,mew=3)
+        # elif len(x) == 3:
+        #     ax.plot3D([x[0]],[x[1]],[x[2]],color=color, marker=self.marker)
+
+def main():
+    print("hello world")
+    #initalize dynamics parameters
+    M = 1
+    f_0 = 0.25
+    f_1 = 0.25
+    f_2 = 0.5
+    #initialize the agent
+    a1 = Agent(state=np.array([0.]), shape=Point1D(), dynamics=Dynamics(1,1, lambda x: -(f_0 + f_1*x + f_2*x*x)/M, lambda x: np.eye(1) * (1/M)), )
+
+    G_shape = Point1D2()
+    #TODO define custom class for the point for the CLF object for the custom intergrator
+
+    g1 = Goal(np.array([5.]), shape=G_shape, dynamics=SingleIntegrator(1), gamma=10)
+
+    # Now we can add everything to a simulation object
+    s = Simulation()
+    s.add_agent(agent=a1, control=g1, upper_bounds=30.)
+    #s.add_obstacle(obst=o1)
+
+    s.simulate(num_steps=100, dt = 0.1, plotting=False)
+
+    #s.plot_functions()
+    #get the agent from the simulation
+    target = s.agents[-1]
+    print(target.trajectory.shape)
+    #create a array that is the step information
+    steps = np.array([0])
+    for i in range(target.trajectory.shape[0]-1):
+        steps = np.append(steps, [i+1])
+    #plot the trajectory
+    #print(steps)
+    trag = target.trajectory.flatten()
+    #print(trag.shape)
+    print(trag)
+    #plt.figure()
+    plt.plot(steps, trag)
+    plt.show()
+
+
+
+if __name__ == '__main__':
+    main()
