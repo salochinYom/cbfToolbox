@@ -48,40 +48,57 @@ class Point1D2(Shape):
 def main():
     print("hello world")
     #initalize dynamics parameters
-    M = 1
+    M = 2
     f_0 = 0.25
     f_1 = 0.25
     f_2 = 0.5
     #initialize the agent
-    a1 = Agent(state=np.array([0.]), shape=Point1D(), dynamics=Dynamics(1,1, lambda x: -(f_0 + f_1*x + f_2*x*x)/M, lambda x: np.eye(1) * (1/M)), )
 
     G_shape = Point1D2()
-    #TODO define custom class for the point for the CLF object for the custom intergrator
+    
+    #thing to record the things
+    #velocities
+    velocities = None
+    #gamma values
+    gammas = [0.01, 0.1, 1, 10, 100]
 
-    g1 = Goal(np.array([5.]), shape=G_shape, dynamics=SingleIntegrator(1), gamma=10)
+    for i in range(len(gammas)):
+        a1 = Agent(state=np.array([0.]), shape=Point1D(), dynamics=Dynamics(1,1, lambda x: -(f_0 + f_1*x + f_2*x*x)/M, lambda x: np.eye(1) * (1/M)), )
+        g = gammas[i]
+        g1 = Goal(np.array([5.]), shape=G_shape, dynamics=SingleIntegrator(1), gamma=g)
+        # Now we can add everything to a simulation object
+        s = Simulation()
+        s.add_agent(agent=a1, control=g1, upper_bounds=50.)
+        #s.add_obstacle(obst=o1)
 
-    # Now we can add everything to a simulation object
-    s = Simulation()
-    s.add_agent(agent=a1, control=g1, upper_bounds=30.)
-    #s.add_obstacle(obst=o1)
+        s.simulate(num_steps=100, dt = 0.1, plotting=False)
 
-    s.simulate(num_steps=100, dt = 0.1, plotting=False)
-
-    #s.plot_functions()
-    #get the agent from the simulation
-    target = s.agents[-1]
-    print(target.trajectory.shape)
+        #s.plot_functions()
+        #get the agent from the simulation
+        target = s.agents[-1]
+        #print(target.trajectory.shape)
+        if i == 0:
+            velocities = target.trajectory
+        else:
+            velocities = np.concatenate((velocities, target.trajectory), axis=1)
+        print(velocities.shape)
+    
     #create a array that is the step information
     steps = np.array([0])
-    for i in range(target.trajectory.shape[0]-1):
+    for i in range(velocities[:,0].shape[0]-1):
         steps = np.append(steps, [i+1])
     #plot the trajectory
     #print(steps)
-    trag = target.trajectory.flatten()
+    #trag = velocities[:,4]
     #print(trag.shape)
-    print(trag)
-    #plt.figure()
-    plt.plot(steps, trag)
+    #print(trag)
+    plt.figure()
+    for i in range(len(gammas)):
+        plt.plot(steps, velocities[:,i], label=f"Gamma = {gammas[i]}")
+    plt.legend()
+    plt.xlabel("time step")
+    plt.ylabel("velocity")
+    plt.title("CLF control with various values of gamma")
     plt.show()
 
 
