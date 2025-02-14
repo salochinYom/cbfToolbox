@@ -1,0 +1,22 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from cbf_toolbox.geometry import Sphere, Ellipsoid, HalfPlane, Point, Shape
+from cbf_toolbox.dynamics import Dynamics, SingleIntegrator2d, SingleIntegrator
+from cbf_toolbox.vertex import Agent, Obstacle, Goal
+from cbf_toolbox.safety import Simulation
+
+
+def main():
+    print("hello world")
+    #initalize dynamics parameters
+    M = 2
+    f_0 = 0.25
+    f_1 = 0.25
+    f_2 = 0.5
+
+    a1 = Agent(state=np.array([0.]), shape=Point1D(), dynamics=Dynamics(1,1, lambda x: -(f_0 + f_1*x + f_2*x*x)/M, lambda x: np.eye(1) * (1/M)), )
+
+
+
+if __name__ == '__main__':
+    main()
