@@ -13,8 +13,30 @@ def main():
     f_0 = 0.25
     f_1 = 0.25
     f_2 = 0.5
+    v_l = 15.
 
-    a1 = Agent(state=np.array([0.]), shape=Point1D(), dynamics=Dynamics(1,1, lambda x: -(f_0 + f_1*x + f_2*x*x)/M, lambda x: np.eye(1) * (1/M)), )
+    f_x = lambda x: np.array([[-(f_0 + f_1*x[0] + f_2*x[0]*x[0])/M],[-x[0]]])
+    #f_x = lambda x: np.array([[0], [0]])
+    f_x = lambda x: 0 
+    #g_x = lambda x: np.eye(1) * (1/M)
+    g_x = lambda x: np.array([[1/M, 0], [0, 0]])
+
+    #print(g_x())
+
+    #initialize objects
+    a1 = Agent(state=np.array([0.,0.]), shape=Sphere(0.5), dynamics=Dynamics(2,2, f_x , g_x))
+    #this probably needs to be a line
+    g1 = Goal(np.array([20.,10.]), shape=Point(), dynamics=SingleIntegrator2d())
+
+    o1 = Obstacle(state=np.array([10.,0.]), shape=HalfPlane(np.array([-1,0]), rotation=0), dynamics=SingleIntegrator2d())
+
+    s = Simulation()
+    s.add_agent(agent=a1, control=g1, upper_bounds= 10.)
+    s.add_obstacle(obst=o1)
+
+    s.simulate(num_steps=100, dt = 0.1)
+
+    s.plot_functions()
 
 
 
